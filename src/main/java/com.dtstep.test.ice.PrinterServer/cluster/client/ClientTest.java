@@ -14,7 +14,7 @@ public class ClientTest {
     public static void main(String[] args) {
         Communicator ic = null;
         try {
-            String initParams = "--Ice.Default.Locator=PrinterIceGrid/Locator:tcp -h 10.206.6.22 -p 4061:tcp -h 10.206.6.11 -p 4061 -z";
+            String initParams = "--Ice.Default.Locator=PrinterIceGrid/Locator:tcp -h 10.206.6.37 -p 4061:tcp -h 10.206.6.39 -p 4061 -z";
             String [] params = new String[]{initParams};
             ic = Util.initialize(params);
             //注意该处配置与接口对应的replica-group的identity名称保持一致
