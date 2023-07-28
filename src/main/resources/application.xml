@@ -1,0 +1,60 @@
+<icegrid>
+    <application name="PrinterServiceApplication">
+        <properties id="MultiThreaded">
+            <property name="Ice.PrintStackTraces" value="1"/>
+            <property name="IceSSL.Trace.Security" value="2"/>
+            <property name="Ice.ThreadPool.Client.Size" value="50"/>
+            <property name="Ice.ThreadPool.Client.SizeMax" value="500"/>
+            <property name="Ice.ThreadPool.Server.Size" value="50"/>
+            <property name="Ice.ThreadPool.Serxver.SizeMax" value="500"/>
+            <property name="IceBox.InheritProperties" value="1"/>
+            <property name="Ice.Override.ConnectTimeout" value="2000"/>
+            <property name="Ice.Override.Timeout" value="2000" />
+            <property name="IceBox.Trace.ServiceObserver" value="1"/>
+            <property name="Ice.Default.Timeout" value="2000"/>
+            <property name="Ice.Default.LocatorCacheTimeout" value="1200" />
+            <property name="Ice.BackgroundLocatorCacheUpdates" value="1"/>
+        </properties>
+        <server-template id="PrinterBoxTemplate">
+            <parameter name="index" default="0"/>
+            <icebox id="printer-icebox${index}" exe="java" activation="on-demand" >
+                <properties>
+                    <properties refid="MultiThreaded" />
+                </properties>
+                <option>-Xmx4000M</option>
+                <option>-Xms4000m</option>
+                <option>-XX:+UseCompressedOops</option>
+                <option>-XX:+HeapDumpOnOutOfMemoryError</option>
+                <option>-XX:+UseG1GC</option>
+                <option>-XX:-UseBiasedLocking</option>
+                <option>-XX:G1HeapRegionSize=4M</option>
+                <option>com.zeroc.IceBox.Server</option>
+                <env>CLASSPATH=.:/opt/soft/PrinterProject/lib/*</env>
+                <!--该处配置server端的接口类地址-->
+                <service name="PrinterService" entry="com.dtstep.test.ice.PrinterServer.cluster.server.PrinterService">
+                    <adapter name="PrinterService" id="PrinterService${index}" endpoints="default" replica-group="PrinterServiceRep" />
+                </service>
+            </icebox>
+        </server-template>
+        <replica-group id="PrinterServiceRep">
+            <load-balancing type="adaptive" n-replicas="0" />
+            <!--该处的type配置slice文件的module名称和interface名称-->
+            <object identity="PrinterServiceIdentity" type="::PrinterServer::Printer"/>
+        </replica-group>
+        <!--node名称，必须与node.cfg中的名称对应-->
+        <node name="node1">
+            <!--注意template名称需要与上面的server-template保持一致 -->
+            <server-instance template="PrinterBoxTemplate" index="11"/>
+            <server-instance template="PrinterBoxTemplate" index="12"/>
+        </node>
+        <node name="node2">
+            <server-instance template="PrinterBoxTemplate" index="21"/>
+            <server-instance template="PrinterBoxTemplate" index="22"/>
+        </node>
+        <node name="node3">
+            <server-instance template="PrinterBoxTemplate" index="31"/>
+            <server-instance template="PrinterBoxTemplate" index="32"/>
+        </node>
+     </application>
+</icegrid>
+
